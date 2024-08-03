@@ -1,0 +1,166 @@
+class VehicleRent:
+    def _init_(self):
+        self.VehicleModels = []
+        try:
+            self.f = open('Vehicles.txt', 'r+')
+        except FileNotFoundError:
+            self.f = open('Vehicles.txt', 'w+')
+
+        for line in self.f:
+            data = line.strip().split(',')
+            TupleData = tuple(data)
+            self.VehicleModels.append(TupleData)
+
+    def VehicleDataSave(self):
+        self.f.seek(0)
+        self.f.truncate(0)
+        for vehicle_id, make, model, year, category in self.VehicleModels:
+            self.f.write(f'{vehicle_id},{make},{model},{year},{category}\n')
+
+    def VehicleAddGarage(self, Vehicle):
+        self.VehicleAddData(Vehicle)
+        return Vehicle
+
+    def VehicleAddData(self, Vehicle):
+        self.VehicleModels.append(Vehicle)
+        self.VehicleDataSave()
+        print(f'{Vehicle[0]} added successfully')
+
+    def VehicleRented(self):
+        RentedVehicle = input('Enter the Vehicle Name to rent: ')
+        found = False
+
+        for i in self.VehicleModels:
+            if RentedVehicle == i[0]:
+                self.VehicleModels.remove(i)
+                found = True
+                self.VehicleDataSave()
+                print(f'{RentedVehicle} has been rented successfully.')
+                break
+
+        if not found:
+            print('\nVehicle not Available')
+
+    def VehicleSearching(self):
+        SearchVehicle = input('Enter Vehicle ID or Model Name to Search the similar searches: ')
+        found = False
+        print('Similar Searches')
+
+        for i in self.VehicleModels:
+            if SearchVehicle in i[0] or SearchVehicle.lower() in i[2].lower():
+                print(f'Vehicle ID: {i[0]}, Make: {i[1]}, Model: {i[2]}, Year: {i[3]}, Category: {i[4]}')
+                found = True
+
+        if not found:
+            print('\nSearch Something Different :(')
+
+    def VehicleList(self):
+        if not self.VehicleModels:
+            print("No vehicles in the garage.")
+            return
+
+        for index, Vehicle in enumerate(self.VehicleModels, start=1):
+            try:
+                print(f'{index}. Vehicle ID: {Vehicle[0]}, Make: {Vehicle[1]}, Model: {Vehicle[2]}, Year: {Vehicle[3]}, Category: {Vehicle[4]}')
+            except IndexError:
+                print(f"Error: Vehicle {index} might be empty.")
+        print()
+
+    def VehicleCatogarize(self):
+        VehicleCatogary = {}
+
+        for vehicle_id, make, model, year, category in self.VehicleModels:
+            if model not in VehicleCatogary:
+                VehicleCatogary[model] = []
+
+            VehicleCatogary[model].append((vehicle_id, make, year, category))
+
+        print('Categorized Vehicles:')
+
+        for model, vehicles in VehicleCatogary.items():
+            print(f"\nModel: {model}")
+            for Vehicle in vehicles:
+                print(f"Vehicle ID: {Vehicle[0]}, Make: {Vehicle[1]}, Year: {Vehicle[2]}, Category: {Vehicle[3]}")
+        print()
+
+    def SameVehicles(self, model):
+        for Vehicle in self.VehicleModels:
+            if model.lower() == Vehicle[2].lower():
+                return True
+        return False
+
+    def VehicleClear(self):
+        self.VehicleModels.clear()
+        self.f.seek(0)
+        self.f.truncate(0)
+        print("All vehicle data has been cleared.")
+
+    def main(self):
+        print('Welcome to Garage, what do you need ?')
+        print('1. Vehicle Add')
+        print('2. Vehicle Rented')
+        print('3. Search Vehicle')
+        print('4. Vehicle Lists')
+        print('5. Categorize Vehicle')
+        print('6. Check Duplicate')
+        print('7. Clear Data')
+        print('8. Exit')
+
+        while True:
+            try:
+                ch = int(input('Enter choice: '))
+            except ValueError:
+                print("Please enter a valid number.")
+                continue
+
+            if ch == 1:
+                # Vehicle Add
+                vehicle_id = input("Enter Vehicle ID: ")
+                make = input("Enter Make: ")
+                model = input("Enter Model: ")
+                year = input("Enter Year: ")
+                category = input("Enter Category: ")
+                new_vehicle = (vehicle_id, make, model, year, category)
+                self.VehicleAddGarage(new_vehicle)
+
+            elif ch == 2:
+                # Vehicle Rented
+                self.VehicleRented()
+
+            elif ch == 3:
+                # Search Vehicle
+                self.VehicleSearching()
+
+            elif ch == 4:
+                # Vehicle Lists
+                self.VehicleList()
+
+            elif ch == 5:
+                # Categorize Vehicle
+                self.VehicleCatogarize()
+
+            elif ch == 6:
+                # Check Duplicate
+                model = input("Enter Model to check for duplicates: ")
+                if self.SameVehicles(model):
+                    print("Duplicates found for this model.")
+                else:
+                    print("No duplicates found for this model.")
+
+            elif ch == 7:
+                # Clear Data
+                confirmation = input("Are you sure you want to clear all data? (yes/no): ")
+                if confirmation.lower() == "yes":
+                    self.VehicleClear()
+
+            elif ch == 8:
+                # Exit
+                print("Thank you for using the Garage Management System.")
+                break
+
+            else:
+                print("Invalid choice. Please select a number between 1 and 8.")
+
+v = VehicleRent()
+
+v.main()
